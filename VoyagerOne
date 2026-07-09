@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoyagerOne | Yerel Çoklu Ajan Mimarisi</title>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Lucide İkon Kütüphanesi -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #070908;       /* Kusursuz Saf Siyah-Yeşil Baz */
+            --bg-panel: #0f1311;      /* Derin Koyu Yeşil/Siyah Panel */
+            --accent-orange: #ff6b00; /* Endüstriyel Canlı Turuncu */
+            --accent-orange-dim: rgba(255, 107, 0, 0.06);
+            --cream: #f5f2eb;         /* Net ve Temiz Krem Metin */
+            --cream-dim: #8e8c87;     /* Pasif Krem Metin */
+            --border-color: rgba(245, 242, 235, 0.05);
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--cream);
+            font-family: var(--font-sans);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Sol Menü (Sidebar) */
+        aside {
+            width: 280px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--accent-orange), #b34a00);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--bg-dark);
+        }
+
+        .brand-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .agent-list {
+            margin-top: 40px;
+            flex-grow: 1;
+        }
+
+        .agent-list-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--cream-dim);
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .agent-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--cream-dim);
+            margin-bottom: 6px;
+            border: 1px solid transparent;
+        }
+
+        .agent-item.active {
+            background-color: var(--accent-orange-dim);
+            color: var(--accent-orange);
+            border-color: rgba(255, 107, 0, 0.12);
+        }
+
+        .agent-status {
+            width: 6px;
+            height: 6px;
+            background-color: #22c55e;
+            border-radius: 50%;
+            margin-left: auto;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .sidebar-footer {
+            font-size: 12px;
+            color: var(--cream-dim);
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+        }
+
+        /* Ana İçerik Alanı */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at 50% 0%, #111a14 0%, var(--bg-dark) 75%);
+            position: relative;
+        }
+
+        /* Üst Header */
+        header {
+            height: 70px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+            background-color: rgba(7, 9, 8, 0.2);
+            backdrop-filter: blur(12px);
+        }
+
+        .system-status {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        .status-tag {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: rgba(245, 242, 235, 0.02);
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Panel Düzeni */
+        .dashboard-content {
+            flex-grow: 1;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 2.2fr 1fr;
+            gap: 28px;
+            overflow-y: auto;
+        }
+
+        /* Kod ve Konsol Bölümü */
+        .console-panel {
+            background-color: rgba(15, 19, 17, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: rgba(15, 19, 17, 0.2);
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .console-body {
+            flex-grow: 1;
+            padding: 24px;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.7;
+            color: #d1ced6;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 14px;
+            display: flex;
+            gap: 14px;
+        }
+
+        .log-time {
+            color: var(--accent-orange);
+            opacity: 0.8;
+        }
+
+        /* Sağ İndirme ve Bilgi Paneli */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .card {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--cream-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* İndirme Butonları Grubu */
+        .download-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn-download {
+            background-color: rgba(245, 242, 235, 0.02);
+            border: 1px solid var(--border-color);
+            color: var(--cream);
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .btn-download:hover {
+            border-color: var(--accent-orange);
+            background-color: var(--accent-orange-dim);
+            color: var(--accent-orange);
+        }
+
+        .btn-download i {
+            transition: transform 0.2s ease;
+        }
+
+        .btn-download:hover i {
+            transform: translateY(2px);
+        }
+
+        .metric-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .metric-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(245, 242, 235, 0.02);
+        }
+
+        .metric-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .metric-label {
+            color: var(--cream-dim);
+        }
+
+        .metric-value {
+            font-family: var(--font-mono);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sol Menü -->
+    <aside>
+        <div>
+            <div class="brand">
+                <div class="brand-logo">
+                    <i data-lucide="terminal" size="18"></i>
+                </div>
+                <span class="brand-title">VoyagerOne</span>
+            </div>
+
+            <div class="agent-list">
+                <div class="agent-list-title">Ajan Altyapısı</div>
+                <div class="agent-item active">
+                    <i data-lucide="compass" size="16"></i> Planner
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-item active">
+                    <i data-lucide="code-2" size="16"></i> Coder
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-item active">
+                    <i data-lucide="shield-alert" size="16"></i> Critic
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-item active">
+                    <i data-lucide="cpu" size="16"></i> Developer
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-item active">
+                    <i data-lucide="binary" size="16"></i> Tester
+                    <div class="agent-status"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <i data-lucide="layers" size="14"></i> MLX Core Engine v1.0
+        </div>
+    </aside>
+
+    <!-- Ana Panel Ekranı -->
+    <main>
+        <header>
+            <div class="system-status">
+                <div class="status-tag">
+                    <i data-lucide="cpu" size="14" style="color: var(--accent-orange);"></i>
+                    <span>Mimari: <strong>Apple Silicon Yerel</strong></span>
+                </div>
+                <div class="status-tag">
+                    <i data-lucide="zap" size="14" style="color: #eab308;"></i>
+                    <span>Altyapı: <strong>MLX Framework</strong></span>
+                </div>
+            </div>
+            <div class="status-tag">
+                <i data-lucide="shield-check" size="14" style="color: #22c55e;"></i>
+                <span>Yerel Mod / Güvenli Çıkarım</span>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Sol: Gerçek Zamanlı Ajan Konsolu -->
+            <div class="console-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="activity" size="16" style="color: var(--accent-orange);"></i>
+                        <span>Orchestrator İşlem Akışı</span>
+                    </div>
+                </div>
+                <div class="console-body">
+                    <div class="log-entry">
+                        <span class="log-time">[01:16:01]</span>
+                        <span>[CORE] Çoklu ajan hiyerarşisi yerel donanımda başlatıldı.</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[01:16:03]</span>
+                        <span>[SYSTEM] Harici bulut API bağımlılıkları tamamen devre dışı.</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[01:16:05]</span>
+                        <span>[MLX-ENGINE] Apple Silicon optimizasyonu aktif. Bellek kilitleme başarılı.</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">[01:16:06]</span>
+                        <span style="color: var(--cream-dim); font-style: italic;">> Dağıtıma hazır. Sağ panelden sistemi indirebilirsiniz.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sağ: İndirme Alanı ve Parametreler -->
+            <div class="side-panel">
+                <div class="card">
+                    <div class="card-title">Sistemi Yerel Kurun</div>
+                    <div class="download-group">
+                        <!-- Windows İndirme Butonu -->
+                        <button class="btn-download" onclick="downloadSystem('windows')">
+                            <span style="display: flex; align-items: center; gap: 12px;">
+                                <i data-lucide="monitor" size="18"></i> Windows için İndir (.bat)
+                            </span>
+                            <i data-lucide="download" size="16"></i>
+                        </button>
+                        
+                        <!-- Mac/Linux İndirme Butonu -->
+                        <button class="btn-download" onclick="downloadSystem('mac_linux')">
+                            <span style="display: flex; align-items: center; gap: 12px;">
+                                <i data-lucide="terminal" size="18"></i> Mac / Linux için İndir (.sh)
+                            </span>
+                            <i data-lucide="download" size="16"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Çalışma Parametreleri</div>
+                    <div class="metric-group">
+                        <div class="metric-item">
+                            <span class="metric-label">Veri Güvenliği</span>
+                            <span class="metric-value" style="color: #22c55e;">%100 Yerel</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Çıkarım Motoru</span>
+                            <span class="metric-value">MLX Engine</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Ajan Hücreleri</span>
+                            <span class="metric-value">5 Hücre Aktif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- BU KISMA KODUNUZU GİRİN ---
+        // Buraya yapıştıracağınız kod, kullanıcılar indirdiğinde otomatik olarak dosya haline gelecektir.
+        const V_CODE = `import os
+print("VoyagerOne Yerel Çoklu Ajan Sistemi Başlatılıyor...")
+# Kendi Python kodlarınızı buraya dilediğiniz gibi ekleyebilirsiniz.
+`;
+        // ------------------------------
+
+        // İndirme Fonksiyonu
+        function downloadSystem(platform) {
+            let filename = "voyagerone.py";
+            let finalContent = V_CODE;
+
+            if (platform === 'windows') {
+                filename = "run_voyagerone.bat";
+                // Windows için bir çalıştırıcı betik içeriği ekler, ardından python kodunu çalıştırır
+                finalContent = `@echo off\necho VoyagerOne Baslatiliyor...\npython -c "${V_CODE.replace(/"/g, '\\"').replace(/\n/g, ' & ')}"\npause`;
+            } else if (platform === 'mac_linux') {
+                filename = "run_voyagerone.sh";
+                // Mac ve Linux için terminal başlatıcı betiği
+                finalContent = `#!/bin/bash\necho "VoyagerOne Başlatılıyor..."\npython3 -c '${V_CODE.replace(/'/g, "'\\''")}'`;
+            }
+
+            const blob = new Blob([finalContent], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        // İkonları yükle
+        lucide.createIcons();
+    </script>
+</body>
+</html>
+
+
+
